@@ -35,3 +35,6 @@ station_freq = station_freq.merge(stations,on='StationID')
 #cn_shape.boundary.plot(ax=m)
 #plt.title('Number of data points per station')
 #%%
+sid = station_freq.StationID.iloc[0] # Haikou should be the station with most record
+s_total_precip = total_precip[total_precip.StationID==sid].copy()
+
