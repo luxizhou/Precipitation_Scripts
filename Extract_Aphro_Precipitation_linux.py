@@ -25,7 +25,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 shapely.speedups.enabled
 
 #%% set parameters
-zone = 1000000.      # buffer zone around tracks, to be consistent with input nodes/track file
+zone = 1500000.      # buffer zone around tracks, to be consistent with input nodes/track file
 pre_days = 1        # number of days before the node's time to include precipitation   
 post_days = 2       # number of days after hte node's time to include precipitation
 
@@ -52,13 +52,14 @@ cn_shape.reset_index(drop=True,inplace=True)
 cma_track_file = 'CMA_Tracks_Nodes_'+str(int(zone/1000))+'km.shp'
 nodes = gpd.read_file(os.path.join(Output_folder2,cma_track_file))
 nodes['Time'] = pd.to_datetime(nodes[['Year','Month','Day']]) 
+nodes_proj = nodes.to_crs(proj_epsg)
 
 #%% read in aphro data
 os.chdir(aphro_folder)
 aphro_files = glob.glob('APHRO_MA_025deg_V1901.*.nc') 
 os.chdir(wkdir)
 #%%
-aphro_files = aphro_files[17:]
+#aphro_files = aphro_files[17:]
 for file in aphro_files:
     print(file)
     aphro_file = os.path.join(aphro_folder,file)
@@ -72,20 +73,21 @@ for file in aphro_files:
     aphro_lons = aphro_daily.lon.values
     aphro_dates = aphro_daily.time.values
 #%%
-    #cmaids = nodes[(nodes.CMAID<(year+1)*100)&(nodes.CMAID>=year*100)].CMAID.unique()
+    cmaids = nodes[(nodes.CMAID<(year+1)*100)&(nodes.CMAID>=year*100)].CMAID.unique()
     #cmaids = nodes[nodes.CMAID<200101].CMAID.unique()
-    cmaids = [201523]
+    #cmaids = [201523]
 
     for cmaid in cmaids:
         print(cmaid)
+        df_proj = nodes_proj[nodes_proj.CMAID==cmaid].copy()
         df = nodes[nodes.CMAID==cmaid].copy()
         # get a rough extent of impact 
-        buffer_zone = df.buffer(zone)
+        buffer_zone = df_proj.buffer(zone)
         polygons = buffer_zone.geometry
         bounds = gpd.GeoSeries(cascaded_union(polygons))
         bounds.crs = CRS.from_epsg(proj_epsg)
         bounds_wgs = bounds.to_crs(epsg=init_epsg)
-    
+        
         # prepare coordinates
         minlon, minlat, maxlon, maxlat = bounds_wgs.geometry.total_bounds
   #%%
@@ -113,7 +115,7 @@ for file in aphro_files:
             coords[dd]=False
         
         # Extract precipitation grids
-        grouped = df.groupby('Time')
+        grouped = df_proj.groupby('Time')
         for name, group in grouped:
             buffer1 = group.buffer(zone)
             polygons = buffer1.geometry
@@ -150,9 +152,10 @@ for file in aphro_files:
                 precip_daily = dummy2.copy()
                 first_call = 0
             else: 
-                precip_daily = precip_daily.append(dummy2)   
-            
-            precip_total = precip_daily.groupby(['lat','lon'])['precip'].sum().to_frame().reset_index()
+                precip_daily = precip_daily.append(dummy2)
+                
+        precip_daily = precip_daily.fillna(0.0)
+        precip_total = precip_daily.groupby(['lat','lon'])['precip'].sum().to_frame().reset_index()
         #%%
         daily_file = str(cmaid) + '_' + str(df.Year.iloc[0]) + '_' + \
             df.Name.iloc[0] + '_daily_precip_aphro_' + \
@@ -162,12 +165,10 @@ for file in aphro_files:
             df.Name.iloc[0] + '_total_precip_aphro_' + \
             str(int(zone/1000))+'km_' + str(int(pre_days))+str(int(post_days))+'.pkl'
     
-        precip_daily.to_pickle(os.path.join(Output_folder, 'APHRO_1000km_12', daily_file))
-        precip_total.to_pickle(os.path.join(Output_folder, 'APHRO_1000km_12', total_file))
+        precip_daily.to_pickle(os.path.join(Output_folder, 'APHRO_1500km_12', daily_file))
+        precip_total.to_pickle(os.path.join(Output_folder, 'APHRO_1500km_12', total_file))
     
         #%% Plotting
-        df_wgs = df.to_crs(epsg=init_epsg)
-        # convert dataframe to geodataframe for plotting
     
         precip_total = gpd.GeoDataFrame(precip_total, \
                                         geometry=gpd.points_from_xy(precip_total.lon, precip_total.lat), \
@@ -175,15 +176,17 @@ for file in aphro_files:
         fig,ax = plt.subplots(1,1)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.01)
-        cmax = precip_total.precip.mean() + precip_total.precip.std()
+        cmax = precip_total.precip.mean() + 3*precip_total.precip.std()
         precip_total.plot(column='precip', ax=ax, \
     #                    cmap='Blues', scheme='quantiles', \
                           cmap='Blues', vmin=0,vmax=cmax, cax=cax, \
     #                  cmap='Blues', scheme='naturalbreaks', cax=cax, \
                           legend=True, legend_kwds={'label': "Total Precip. (mm)"})
         cn_shape.boundary.plot(color='black',ax=ax)
-        df_wgs.plot(ax=ax,markersize=2,color='red')
-        ax.title.set_text(df.Name.iloc[0] + ' ' + days[0] + '-' + days[-1])
+        df.plot(ax=ax,markersize=2,color='red')
+        
+        plt.text(0.3, 0.9, 'Max. total precip = %d mm'%precip_total.precip.max(), horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
+        ax.title.set_text('APHRODITE ' + df.Name.iloc[0] + ' ' + days[0] + '-' + days[-1])
         ax.set_xlim([70,140])
         ax.set_ylim([15,55])    
         ax.set_xlabel('Longitude')
@@ -192,7 +195,7 @@ for file in aphro_files:
             df.Name.iloc[0] + '_total_precip_aphro_' + str(int(zone/1000)) + \
             'km_' + str(int(pre_days)) + str(int(post_days)) + '.png'
     
-        fig.savefig(os.path.join(Output_folder,'APHRO_1000km_12', figname))
+        fig.savefig(os.path.join(Output_folder,'APHRO_1500km_12', figname))
         plt.close(fig)
 
 
