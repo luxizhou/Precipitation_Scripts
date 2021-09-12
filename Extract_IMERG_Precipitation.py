@@ -23,7 +23,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 shapely.speedups.enabled
 
 #%% set parameters
-zone = 500000.      # buffer zone around tracks, to be consistent with input nodes/track file
+zone = 1000000.      # buffer zone around tracks, to be consistent with input nodes/track file
 pre_days = 1        # number of days before the node's time to include precipitation   
 post_days = 2       # number of days after hte node's time to include precipitation
 
@@ -42,9 +42,11 @@ cn_shape = world[world.name=='China'].copy()
 cn_shape.reset_index(drop=True,inplace=True)
 
 #%%
-nodes = gpd.read_file(os.path.join(Output_folder2,'CMA_Tracks_Nodes_500km.shp'))
+cma_track_file = 'CMA_Tracks_Nodes_'+str(int(zone/1000))+'km.shp'
+nodes = gpd.read_file(os.path.join(Output_folder2,cma_track_file))
 nodes['Time'] = pd.to_datetime(nodes[['Year','Month','Day']])  
-cmaids = nodes[(nodes.CMAID<200102)&(nodes.CMAID>200026)].CMAID.unique()
+#cmaids = nodes[(nodes.CMAID<200102)&(nodes.CMAID>200026)].CMAID.unique()
+cmaids = nodes[nodes.CMAID>200026].CMAID.unique()
 #%% example HATO
 #idx = nodes.index[(nodes.Year==2017)&(nodes.Name=='HATO')]
 for cmaid in cmaids:
