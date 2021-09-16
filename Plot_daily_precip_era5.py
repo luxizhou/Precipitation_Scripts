@@ -46,7 +46,6 @@ stations.rename(columns={"long": "lon"},inplace=True)
 cma_precip = total_precip[total_precip.SerialID==201523] 
 cma_precip = cma_precip.merge(stations[['StationID','lat','lon']],on='StationID')
 
-
 #%%
 era5_file = os.path.join(era5_folder,'ERA5_Total_Precip_2015.nc')
 data = xr.open_dataset(era5_file)
@@ -60,14 +59,15 @@ day2 = datetime(2015,10,7)
 doy1 = (day1-doy_offset).days
 doy2 = (day2-doy_offset).days
 doys = np.arange(doy1,doy2+1)
+
 #%% get track info :201523
+
 cma_tracks = gpd.read_file(os.path.join(Output_folder2,'CMA_Best_Tracks_Nodes.shp'))
 track = cma_tracks[cma_tracks.CMAID==201523].copy()
 track['datetime'] = pd.to_datetime(track[['Year','Month','Day','Hour']])
 track = track.reset_index(drop=True)
 for i in np.arange(0,len(track)):
     track.loc[i,'doy']=(track.loc[i,'datetime']-doy_offset).days
-
 
 track_proj = track.to_crs(2345)
 #plt.figure()
@@ -76,13 +76,20 @@ first_day=1
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 cn_shape = world[world.name=='China'].copy()
 cn_shape.reset_index(drop=True,inplace=True)
+#%%
+plt.figure()
+
+for i in np.arange(1,len(doys)+1):
+    print(i)
+    ax=plt.subplot(2,4,i)
+    era5_daily['precip'][doys[i-1]-1,:,:].plot(ax=ax)
+
+
 
 #%%
 for i in np.arange(1,len(doys)+1):
     print(i)
-    #ax=plt.figure()
-    #ax=track.plot(markersize=2)
-    #ax.plot(cma_precip['lon'],cma_precip['lat'],linestyle='',marker='.',markersize=4,color='k')
+    ax=plt.subplot(2,4,i)
     track_doys = track.doy.to_list()
     if (doys[i-1] in track_doys):
         track[track.doy==doys[i-1]].plot(ax=ax,color='r',markersize=2)
@@ -90,8 +97,12 @@ for i in np.arange(1,len(doys)+1):
         buffer = track_proj[track_proj.doy==doys[i-1]].buffer(1500000)
     else:
         if first_day==1:
+            track[track.doy==doys[0]].plot(ax=ax,color='r',markersize=2)
+
             buffer = track_proj[track_proj.doy==track_proj.doy.min()].buffer(1500000)
         else:
+            track[track.doy==track.doy.max()].plot(ax=ax,color='r',markersize=2)
+
             buffer = track_proj[track_proj.doy==track_proj.doy.max()].buffer(1500000)
   
     polygons = buffer.geometry
@@ -101,6 +112,7 @@ for i in np.arange(1,len(doys)+1):
     aa = era5_daily['precip'][doys[i-1]-1,:,:].to_dataframe()
     aa = aa.reset_index().drop(columns='date')
     aa['geometry'] = aa.apply(lambda x: Point((float(x.longitude),float(x.latitude))),axis=1)
+    
     aa = gpd.GeoDataFrame(aa,geometry='geometry',crs="epsg:4326")
   
     idx1 = aa.geometry.apply(lambda x: x.within(bounds[0]))
@@ -109,7 +121,6 @@ for i in np.arange(1,len(doys)+1):
 
     cc = gpd.GeoDataFrame(cc,geometry='geometry',crs='epsg:4326')
 
-    fig,ax = plt.subplots(1,1)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.01)
@@ -134,7 +145,6 @@ for i in np.arange(1,len(doys)+1):
 #%%
 ee = pd.merge(dd,aa[['geometry','latitude','longitude']],right_index=True,left_index=True,how='inner')
 ee = gpd.GeoDataFrame(ee,geometry='geometry',crs='epsg:4326')
-#%%
 
 #%% load China boundary
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
