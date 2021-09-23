@@ -48,11 +48,13 @@ cma_precip = cma_precip.merge(stations[['StationID','lat','lon']],on='StationID'
 
 #%%
 era5_file = os.path.join(era5_folder,'ERA5_Total_Precip_2015.nc')
+#ds = nc4.Dataset(era5_file,'r')
+#%%
 data = xr.open_dataset(era5_file)
 era5_daily = data.groupby('time.date').sum()    # get the daily sum (unit:m)
 era5_daily['tp'] = era5_daily['tp']*1000.       # convert precipitation from m to mm.
 era5_daily = era5_daily.rename({'tp':'precip'})
-
+#%%
 doy_offset = datetime(2014,12,31)
 day1 = datetime(2015,9,30)
 day2 = datetime(2015,10,7)
@@ -77,31 +79,32 @@ world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 cn_shape = world[world.name=='China'].copy()
 cn_shape.reset_index(drop=True,inplace=True)
 #%%
-plt.figure()
+# plt.figure()
 
-for i in np.arange(1,len(doys)+1):
-    print(i)
-    ax=plt.subplot(2,4,i)
-    era5_daily['precip'][doys[i-1]-1,:,:].plot(ax=ax)
+# for i in np.arange(1,len(doys)+1):
+#     print(i)
+#     ax=plt.subplot(2,4,i)
+#     era5_daily['precip'][doys[i-1]-1,:,:].plot(ax=ax)
 
 
 
 #%%
+plt.figure()
 for i in np.arange(1,len(doys)+1):
     print(i)
     ax=plt.subplot(2,4,i)
     track_doys = track.doy.to_list()
     if (doys[i-1] in track_doys):
-        track[track.doy==doys[i-1]].plot(ax=ax,color='r',markersize=2)
+        track[track.doy==doys[i-1]].plot(ax=ax,color='r',markersize=4)
 
         buffer = track_proj[track_proj.doy==doys[i-1]].buffer(1500000)
     else:
         if first_day==1:
-            track[track.doy==doys[0]].plot(ax=ax,color='r',markersize=2)
+            track[track.doy==doys[0]].plot(ax=ax,color='r',markersize=4)
 
             buffer = track_proj[track_proj.doy==track_proj.doy.min()].buffer(1500000)
         else:
-            track[track.doy==track.doy.max()].plot(ax=ax,color='r',markersize=2)
+            track[track.doy==track.doy.max()].plot(ax=ax,color='r',markersize=4)
 
             buffer = track_proj[track_proj.doy==track_proj.doy.max()].buffer(1500000)
   
@@ -143,29 +146,29 @@ for i in np.arange(1,len(doys)+1):
         dd['precip'] = dd['precip_x']+dd['precip_y']
         dd = dd[['precip']]
 #%%
-ee = pd.merge(dd,aa[['geometry','latitude','longitude']],right_index=True,left_index=True,how='inner')
-ee = gpd.GeoDataFrame(ee,geometry='geometry',crs='epsg:4326')
+# ee = pd.merge(dd,aa[['geometry','latitude','longitude']],right_index=True,left_index=True,how='inner')
+# ee = gpd.GeoDataFrame(ee,geometry='geometry',crs='epsg:4326')
 
-#%% load China boundary
-world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-cn_shape = world[world.name=='China'].copy()
-cn_shape.reset_index(drop=True,inplace=True)
+# #%% load China boundary
+# world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+# cn_shape = world[world.name=='China'].copy()
+# cn_shape.reset_index(drop=True,inplace=True)
 
 
-fig,ax = plt.subplots(1,1)
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.01)
-cmax = ee.precip.mean() + ee.precip.std()
-ee.plot(column='precip', ax=ax, cmap='Blues',cax=cax, \
-        legend=True, legend_kwds={'label': "Total Precip. (mm)"})
-cn_shape.boundary.plot(color='black',ax=ax)
-#%%
-df_wgs.plot(ax=ax,markersize=2,color='red')
-ax.title.set_text(df.Name.iloc[0] + ' ' + days[0] + '-' + days[-1])
-ax.set_xlim([70,140])
-ax.set_ylim([15,55])    
-ax.set_xlabel('Longitude')
-ax.set_ylabel('Latitude')                              
+# fig,ax = plt.subplots(1,1)
+# divider = make_axes_locatable(ax)
+# cax = divider.append_axes("right", size="5%", pad=0.01)
+# cmax = ee.precip.mean() + ee.precip.std()
+# ee.plot(column='precip', ax=ax, cmap='Blues',cax=cax, \
+#         legend=True, legend_kwds={'label': "Total Precip. (mm)"})
+# cn_shape.boundary.plot(color='black',ax=ax)
+# #%%
+# df_wgs.plot(ax=ax,markersize=2,color='red')
+# ax.title.set_text(df.Name.iloc[0] + ' ' + days[0] + '-' + days[-1])
+# ax.set_xlim([70,140])
+# ax.set_ylim([15,55])    
+# ax.set_xlabel('Longitude')
+# ax.set_ylabel('Latitude')                              
 
     
 
