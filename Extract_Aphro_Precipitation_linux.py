@@ -9,17 +9,13 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import glob
-#import re
-#import cartopy.crs as ccrs
 from datetime import datetime, timedelta
-from shapely.geometry import LineString, Point, Polygon, MultiPoint
+from shapely.geometry import Point
 import matplotlib.pyplot as plt
 import geopandas as gpd
 from pyproj import CRS
 from shapely.ops import cascaded_union
 import seaborn as sns; sns.set_theme()
-#import matplotlib.pyplot as plt
-#import netCDF4 as nc
 import shapely
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 shapely.speedups.enabled
@@ -33,13 +29,12 @@ proj_epsg = 2345    # projeced CRS
 init_epsg = 4326    # geographical CRS
 #%%
 
-#aphro_folder = 'I:\Precipitation\aphro'
-
 wkdir = '/home/lzhou/Precipitation/Precipitation_Scripts'
 aphro_folder = '/media/lzhou/Extreme SSD/Precipitation/APHRODITE' #APHRO_MA_025deg_V1901.1998.nc
 CMA_folder = '/media/lzhou/Extreme SSD/TC/CMA_Historical_Data/Wind_Rainfall'
 Output_folder = r'/home/lzhou/Precipitation/Output'
 Output_folder2 = os.path.join(wkdir,'Output')
+case = 'APHRO_1500km_12'
 
 
 #%% load China boundary
@@ -165,15 +160,17 @@ for file in aphro_files:
             df.Name.iloc[0] + '_total_precip_aphro_' + \
             str(int(zone/1000))+'km_' + str(int(pre_days))+str(int(post_days))+'.pkl'
     
-        precip_daily.to_pickle(os.path.join(Output_folder, 'APHRO_1500km_12', daily_file))
-        precip_total.to_pickle(os.path.join(Output_folder, 'APHRO_1500km_12', total_file))
+        precip_daily.to_pickle(os.path.join(Output_folder, case, daily_file))
+        precip_total.to_pickle(os.path.join(Output_folder, case, total_file))
     
         #%% Plotting
     
         precip_total = gpd.GeoDataFrame(precip_total, \
                                         geometry=gpd.points_from_xy(precip_total.lon, precip_total.lat), \
                                         crs="epsg:4326")
-        fig,ax = plt.subplots(1,1)
+        fig_id = 30
+        fig = plt.figure(fig_id)
+        ax = fig.add_subplot(111)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.01)
         cmax = precip_total.precip.mean() + 3*precip_total.precip.std()
@@ -194,9 +191,9 @@ for file in aphro_files:
         figname = str(cmaid) + '_' + str(df.Year.iloc[0]) + '_' + \
             df.Name.iloc[0] + '_total_precip_aphro_' + str(int(zone/1000)) + \
             'km_' + str(int(pre_days)) + str(int(post_days)) + '.png'
-    
-        fig.savefig(os.path.join(Output_folder,'APHRO_1500km_12', figname))
-        plt.close(fig)
+        fig.tight_layout()
+        fig.savefig(os.path.join(Output_folder,case, figname))
+        plt.close(fig_id)
 
 
 

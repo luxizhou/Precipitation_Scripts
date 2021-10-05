@@ -55,7 +55,7 @@ infile = os.path.join(data_dir,filename)
 df = pd.read_pickle(infile)
 df.sort_values(by=['lat','lon'],ignore_index=True,inplace=True)
 #%% sort event total preciptation for each grid
-data0 = df.iloc[:,23:].to_numpy()   # This is counting from 2001-2020, IMERG Data
+data0 = df.iloc[:,23:].to_numpy()   # This is counting from 2001-2020, IMERG_15km_12 Data
 data1 = np.sort(-data0,axis=1) 
 data2 = -data1
 sorted_df = pd.DataFrame(data2)

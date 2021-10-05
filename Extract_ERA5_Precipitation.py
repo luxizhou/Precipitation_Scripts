@@ -32,11 +32,12 @@ proj_epsg = 2345    # projeced CRS
 init_epsg = 4326    # geographical CRS
 #%%
 
-ERA5_folder = '/home/lzhou/Precipitation/Data/ERA5'
+#ERA5_folder = '/home/lzhou/Precipitation/Data/ERA5'
+ERA5_folder = '/media/lzhou/Extreme SSD/Precipitation/ERA5'
 CMA_folder = '/home/lzhou/Precipitation/TC_Tracks/CMA_Historical_Data/Wind_Rainfall/'
 Output_folder = '/home/lzhou/Precipitation/Output'
 Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
-
+case = 'ERA5_1500km_12'
 #%% load China boundary
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 cn_shape = world[world.name=='China'].copy()
@@ -52,7 +53,8 @@ nodes_proj = nodes.to_crs(proj_epsg)
 files = os.listdir(ERA5_folder)
 era5_files = [x for x in files if 'nc' in x]
 era5_files.sort()
-for era5_file in era5_files[1:2]:
+#%%
+for era5_file in era5_files:
     print(era5_file)
     era5_file = os.path.join(ERA5_folder,era5_file)
     year = int(era5_file[-7:-3])
@@ -67,9 +69,9 @@ for era5_file in era5_files[1:2]:
     era_lons = era5_daily.longitude.values
     era_dates = era5_daily.date.values
 
-    #cmaids = nodes[(nodes.CMAID<(year+1)*100)&(nodes.CMAID>=year*100)].CMAID.unique()
+    cmaids = nodes[(nodes.CMAID<(year+1)*100)&(nodes.CMAID>=year*100)].CMAID.unique()
     #cmaids = nodes[nodes.CMAID<200101].CMAID.unique()
-    cmaids = [201523]
+    #cmaids = [201523]
 
     for cmaid in cmaids:
         print(cmaid)
@@ -157,8 +159,8 @@ for era5_file in era5_files[1:2]:
             df.Name.iloc[0] + '_total_precip_ERA5_' + \
             str(int(zone/1000))+'km_' + str(int(pre_days))+str(int(post_days))+'.pkl'
     
-        precip_daily.to_pickle(os.path.join(Output_folder, 'ERA5_1500km_12', daily_file))
-        precip_total.to_pickle(os.path.join(Output_folder, 'ERA5_1500km_12', total_file))
+        precip_daily.to_pickle(os.path.join(Output_folder, case, daily_file))
+        precip_total.to_pickle(os.path.join(Output_folder, case, total_file))
     
         #%% Plotting
         #df_wgs = df.to_crs(epsg=init_epsg)
@@ -167,7 +169,10 @@ for era5_file in era5_files[1:2]:
         precip_total = gpd.GeoDataFrame(precip_total, \
                                         geometry=gpd.points_from_xy(precip_total.longitude, precip_total.latitude), \
                                         crs="epsg:4326")
-        fig,ax = plt.subplots(1,1)
+        #fig,ax = plt.subplots(1,1)
+        fig_id = 20
+        fig = plt.figure(fig_id)
+        ax = fig.add_subplot(111)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.01)
         cmax = precip_total.precip.mean() + 3*precip_total.precip.std()
@@ -189,9 +194,9 @@ for era5_file in era5_files[1:2]:
         figname = str(cmaid) + '_' + str(df.Year.iloc[0]) + '_' + \
             df.Name.iloc[0] + '_total_precip_ERA5_' + str(int(zone/1000)) + \
             'km_' + str(int(pre_days)) + str(int(post_days)) + '.png'
-    
-        fig.savefig(os.path.join(Output_folder,'ERA5_1500km_12', figname))
-        plt.close(fig)
+        fig.tight_layout()
+        fig.savefig(os.path.join(Output_folder,case,figname))
+        plt.close(fig_id)
 
 
 
