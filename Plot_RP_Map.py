@@ -20,42 +20,26 @@ shapely.speedups.enabled
 wrk_dir = '/home/lzhou/Precipitation/Precipitation_Scripts'
 os.chdir(wrk_dir)
 
-data_type = 'IMERG'
-case_name = 'IMERG_1500km_12'
+data_type = 'ERA5'
+case_name = 'ERA5_1000km_12'
 factor = 'total'
-output_dir = '/home/lzhou/Precipitation/Output'
-data_dir = os.path.join(output_dir,case_name)
-figure_dir = '/home/lzhou/Precipitation/Output/Figures'
-#%% combine total precipitation data from each event
-
-# dummy = os.listdir(data_dir)
-# files = [x for x in dummy if (factor in x) and ('pkl' in x)]
-# files.sort()
-# #%%
-# os.chdir(data_dir)
-# first_call = 1
-# for infile in files:
-#     print(infile)
-#     data = pd.read_pickle(infile)
-#     data.rename(columns={'precip':infile[:6]},inplace=True)
-#     print(len(data))
-    
-#     if (first_call==1) :
-#         df = data.copy()
-#         first_call = 0
-#     else:
-#         df = df.merge(data,on=['lat','lon'],how = 'outer',)
-# #%%
-# filename = case_name+'_'+factor+'_precip.pkl'
-# df.to_pickle(filename)
+data_dir0 = '/home/lzhou/Precipitation/Output'
+data_dir1 = os.path.join(data_dir0,'Merged_Output')
+figure_dir = os.path.join(data_dir0,'Figures')
 
 #%% load assembled event total precipitation data
 filename = case_name+'_'+factor+'_precip.pkl'
-infile = os.path.join(data_dir,filename)
+infile = os.path.join(data_dir1,filename)
 df = pd.read_pickle(infile)
 df.sort_values(by=['lat','lon'],ignore_index=True,inplace=True)
 #%% sort event total preciptation for each grid
-data0 = df.iloc[:,23:].to_numpy()   # This is counting from 2001-2020, IMERG_15km_12 Data
+if case_name == 'IMERG_1500km_12':
+    data0 = df.iloc[:,23:].to_numpy()   # This is counting from 2001-2020, IMERG_15km_12 Data
+elif case_name == 'IMERG_1000km_12':
+    data0 = df.iloc[:,19:].to_numpy()
+elif ('APHRO' in case_name) or ('ERA5' in case_name):
+    data0 = df.iloc[:,2:].to_numpy()
+    
 data1 = np.sort(-data0,axis=1) 
 data2 = -data1
 sorted_df = pd.DataFrame(data2)
@@ -72,8 +56,15 @@ cn_shape.reset_index(drop=True,inplace=True)
 idx = sorted_df.geometry.apply(lambda x: x.within(cn_shape.iloc[0].geometry))
 china_points = sorted_df.loc[idx].copy()
 #%%
-rps = np.array([20,10,5,4,2,1])
-ranks = 20/rps
+if data_type == 'IMERG':
+    rps = np.array([20,10,5,4,2,1])
+    ranks = 20/rps
+elif data_type == 'APHRO':
+    rps = np.array([18,9,6,3,2,1])
+    ranks = 18/rps
+elif data_type == 'ERA5':
+    rps = np.array([40,20,10,8,5,4,2,1])
+    ranks = 40/rps
 #%%
 
 font = {'family' : 'normal',
