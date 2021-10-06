@@ -11,14 +11,14 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from datetime import datetime, timedelta
-from shapely.geometry import LineString, Point, Polygon, MultiPoint
+from shapely.geometry import Point
 import matplotlib.pyplot as plt
 import geopandas as gpd
-from pyproj import CRS
+#from pyproj import CRS
 from shapely.ops import cascaded_union
 import seaborn as sns; sns.set_theme()
-import matplotlib.pyplot as plt
-import netCDF4 as nc
+#import matplotlib.pyplot as plt
+#import netCDF4 as nc
 import shapely
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 shapely.speedups.enabled
@@ -54,7 +54,7 @@ files = os.listdir(ERA5_folder)
 era5_files = [x for x in files if 'nc' in x]
 era5_files.sort()
 #%%
-for era5_file in era5_files:
+for era5_file in era5_files[37:]:
     print(era5_file)
     era5_file = os.path.join(ERA5_folder,era5_file)
     year = int(era5_file[-7:-3])
