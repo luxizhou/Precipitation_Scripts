@@ -37,9 +37,9 @@ data_folder0 = '/home/lzhou/Precipitation/Output'
 data_folder = os.path.join(data_folder0,'Merged_Output')
 figure_folder = os.path.join(data_folder0,'Figures')
 
-case_name = 'IMERG_1000km_12'
+case_name = 'APHRO_1000km_12'
 factor = 'total'
-figures_name = 'RP_curves_xlog.pdf'
+figures_name = case_name + '_EP_curves_xlog.pdf'
 
 
 #%%
@@ -59,31 +59,40 @@ total_precip = pd.read_csv(os.path.join(Shanghai_folder,'1949-2018_TotalPrecipit
                 header=None,names=['SerialID','TCID','StationID','Total_Precip'])
 total_precip['SerialID'] = total_precip['SerialID'].astype(int)
 
-#%%
-if same_length == 1:
-    if 'IMERG' in case_name:
-        data = data.iloc[:,19:386]
-        total_precip = total_precip[total_precip.SerialID>=200100]
 #%% load station data
 stations = pd.read_csv(os.path.join(Shanghai_folder,'China_Sta.csv'))
 stations['lat'] = stations['lat'].apply(lambda x: float(x[:2])+int(x[3:5])/60.)
 stations['long'] = stations['long'].apply(lambda x: float(x[:3])+int(x[4:6])/60.)
 stations.rename(columns={"long": "lon"},inplace=True)
 
-#%%
 # Number of measurements of total precipitation at each shanghai data stations:
 station_freq = total_precip.StationID.value_counts().to_frame().reset_index().rename(columns={'index':'StationID','StationID':'Count'})
 station_freq = station_freq.merge(stations,on='StationID')
+
+#%%
+if 'IMERG' in case_name:
+    data = data.iloc[:,19:]
+#%% ignore grids where total precipitation is less than 10mm
+data.where(data>=10.,np.nan,inplace=True)
+#%%
+if same_length == 1:
+    if 'IMERG' in case_name:
+        total_precip = total_precip[total_precip.SerialID>=200100].reset_index(drop=True)
+        Shanghai_period = IMERG_period
+        figures_name = 'SL_' + figures_name
+
+
+
 #%% loop through top 20 most record stations
 pp = PdfPages(os.path.join(figure_folder,figures_name))
 print(filename)
 for ii in np.arange(0,20):
     sid = station_freq.StationID.iloc[ii] # Haikou should be the station with most record
     s_total_precip = total_precip[total_precip.StationID==sid].copy()
-    if same_length==1:
-        s_total_precip = s_total_precip[s_total_precip.SerialID>=200000] # to be decided carefully if choose same_length
-    else:
-        s_total_precip = get_EP(s_total_precip,'Total_Precip',Shanghai_period)    
+    #if same_length==1:
+    #    s_total_precip = s_total_precip[s_total_precip.SerialID>=200000] # to be decided carefully if choose same_length
+    #else:
+    s_total_precip = get_EP(s_total_precip,'Total_Precip',Shanghai_period)    
 
     idx = stations[stations.StationID==sid].index
     sname = stations.loc[idx[0],'StationName']
@@ -107,14 +116,14 @@ for ii in np.arange(0,20):
         target_precip.plot(x='RP',y='Total_Precip',marker='.',color='r',linestyle='',label=case_name,ax=ax)
         plt.legend()
         ax.set_xlabel('Return Period (Year)')
-        ax.set_ylabel('Total Precipitation (mm)')
+        ax.set_ylabel('Event Total Precipitation (mm)')
     
     if 'EP' in figures_name:
         ax = s_total_precip.plot(x='EP',y='Total_Precip',marker='.',color='b',linestyle='',label='Shanghai Data')
         target_precip.plot(x='EP',y='Total_Precip',marker='.',color='r',linestyle='',label=case_name,ax=ax)
         plt.legend()
-        ax.set_xlabel('Exceedence Probability')
-        ax.set_ylabel('Total Precipitation (mm)')
+        ax.set_xlabel('Annual Exceedence Probability')
+        ax.set_ylabel('Event Total Precipitation (mm)')
     
     if 'xlog' in figures_name:
         ax.set_xscale('log')

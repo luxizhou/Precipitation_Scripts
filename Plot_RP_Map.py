@@ -20,8 +20,8 @@ shapely.speedups.enabled
 wrk_dir = '/home/lzhou/Precipitation/Precipitation_Scripts'
 os.chdir(wrk_dir)
 
-data_type = 'ERA5'
-case_name = 'ERA5_1000km_12'
+data_type = 'APHRO'
+case_name = 'APHRO_1000km_12'
 factor = 'total'
 data_dir0 = '/home/lzhou/Precipitation/Output'
 data_dir1 = os.path.join(data_dir0,'Merged_Output')
@@ -32,6 +32,12 @@ filename = case_name+'_'+factor+'_precip.pkl'
 infile = os.path.join(data_dir1,filename)
 df = pd.read_pickle(infile)
 df.sort_values(by=['lat','lon'],ignore_index=True,inplace=True)
+
+#%% ignore grids where total precipitation is less than 10mm
+cols = df.columns
+cols = cols[2:]
+df[cols] = df[cols].where(df[cols]>=10., np.nan)
+
 #%% sort event total preciptation for each grid
 if case_name == 'IMERG_1500km_12':
     data0 = df.iloc[:,23:].to_numpy()   # This is counting from 2001-2020, IMERG_15km_12 Data

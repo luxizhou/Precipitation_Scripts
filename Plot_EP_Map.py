@@ -37,8 +37,8 @@ def Find_Exceedance_Probability(indata,threshold,record_period):
 wrk_dir = '/home/lzhou/Precipitation/Precipitation_Scripts'
 os.chdir(wrk_dir)
 
-data_type = 'ERA5'
-case_name = 'ERA5_1000km_12'
+data_type = 'APHRO'
+case_name = 'APHRO_1000km_12'
 factor = 'total'
 data_dir0 = '/home/lzhou/Precipitation/Output'
 data_dir1 = os.path.join(data_dir0,'Merged_Output')
@@ -49,17 +49,22 @@ APHRO_period = 18.
 ERA5_period = 2020.-1980.
 
 if data_type == 'IMERG':
-    thresholds = [1000,500,200]
+    thresholds = [1000,500,250]
 elif data_type == 'ERA5':
     thresholds = [5000, 2000]
 else:
-    thresholds = [500,200]
+    thresholds = [500,250]
 
 #%% load assembled event total precipitation data
 filename = case_name+'_'+factor+'_precip.pkl'
 infile = os.path.join(data_dir1,filename)
 df = pd.read_pickle(infile)
 df.sort_values(by=['lat','lon'],ignore_index=True,inplace=True)
+
+#%% ignore grids where total precipitation is less than 10mm
+cols = df.columns
+cols = cols[2:]
+df[cols] = df[cols].where(df[cols]>=10., np.nan)
 #%% sort event total preciptation for each grid
 if case_name == 'IMERG_1500km_12':
     data0 = df.iloc[:,23:].to_numpy()   # This is counting from 2001-2020, IMERG_15km_12 Data
@@ -68,6 +73,8 @@ elif case_name == 'IMERG_1000km_12':
 elif ('APHRO' in case_name) or ('ERA5' in case_name):
     data0 = df.iloc[:,2:].to_numpy()
     
+
+#%%
 data1 = np.sort(-data0,axis=1) 
 data2 = -data1
 sorted_df = pd.DataFrame(data2)
@@ -105,7 +112,7 @@ for ii in np.arange(0,len(thresholds)):
     #cmax = china_points.iloc[:,int(ranks[ii])].mean()+china_points.iloc[:,int(ranks[ii])].std()*3.
     china_points[china_points.EP>0].plot(column='EP', ax=ax, cmap='Spectral_r', \
     #                  vmin=0, vmax=cmax, \
-                                         cax=cax,legend=True, legend_kwds={'label': "Exceedance Probability"})
+                                         cax=cax,legend=True, legend_kwds={'label': "Annual Exceedance Probability"})
     cn_shape.boundary.plot(color='black',ax=ax)
 
     #plt.text(0.3, 0.9, 'Max. total precip = %d mm'%china_points.iloc[:,int(ranks[ii])].max(), horizontalalignment='center',verticalalignment='center', transform=ax.transAxes)
