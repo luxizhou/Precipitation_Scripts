@@ -31,15 +31,17 @@ proj_epsg = 2345    # projeced CRS
 init_epsg = 4326    # geographical CRS
 #%%
 IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
-CMA_folder = '/home/lzhou/Precipitation/TC_Tracks/CMA_Historical_Data/Wind_Rainfall/'
+CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data/Wind_Rainfall/'
 Output_folder = '/home/lzhou/Precipitation/Output'
 Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
 case = 'IMERG_1000km_12'
-#%% Make coordinates for IMERG data
-# find the extent of data 
+#%% Get the domain of greater China
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 cn_shape = world[world.name=='China'].copy()
 cn_shape.reset_index(drop=True,inplace=True)
+tw_shape = world[world.name=='Taiwan'].copy()
+tw_shape.reset_index(drop=True,inplace=True)
+greater_china = cn_shape.geometry.union(tw_shape.geometry)
 
 #%%
 cma_track_file = 'CMA_Tracks_Nodes_'+str(int(zone/1000))+'km.shp'
