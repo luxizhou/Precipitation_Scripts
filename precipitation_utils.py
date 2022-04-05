@@ -6,6 +6,8 @@ Created on Wed Mar 30 11:11:17 2022
 @author: lzhou
 """
 import os
+import numpy as np
+import pandas as pd
 import xarray as xr
 import geopandas as gpd
 from pyproj import CRS
@@ -54,3 +56,15 @@ def extract_IMERG_precipitation(df,zone,IMERG_folder,init_epsg=4326,item='precip
         event_precip.to_netcdf(outfile)
         
     return event_precip
+
+def sort_precipitation_at_grid(df,col_name,val_name,cols_to_sort,pivot_index=['lat','lon']):
+    df_pivot = df.pivot(index=pivot_index,columns=col_name,values=val_name)#.reset_index()
+    # sort precipitation in each grid
+    data = df_pivot.to_numpy()
+    data1 = np.sort(-data[:,cols_to_sort:],axis=1) #only consider data since 2001 as IMERG is only availabe for part of year 2020
+    data2 = -data1
+    sorted_df = pd.DataFrame(data2,index=df_pivot.index)
+    sorted_df = sorted_df.reset_index()
+    
+    return sorted_df
+
