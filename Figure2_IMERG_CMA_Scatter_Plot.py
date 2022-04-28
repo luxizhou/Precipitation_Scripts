@@ -297,14 +297,14 @@ for yy in np.arange(2000,2019):
     merge1 = daily_precip.merge(df,left_on=['CMAID','time','imerg_lat1','imerg_lon1'],right_on=['CMAID','time','lat','lon'],how='left')
     merge1.drop(columns=['lat_y','lon_y'],inplace=True)
     merge1.rename(columns={'lat_x':'orig_lat','lon_x':'orig_y'},inplace=True)
-    #%%
+    
     merge2 = merge1.merge(df,left_on=['CMAID','time','imerg_lat1','imerg_lon2'],right_on=['CMAID','time','lat','lon'],how='left')
     merge2.drop(columns=['lat','lon'],inplace=True)
-    #%%
+    
     merge3 = merge2.merge(df,left_on=['CMAID','time','imerg_lat2','imerg_lon1'],right_on=['CMAID','time','lat','lon'],how='left')
     merge3.drop(columns=['lat','lon'],inplace=True)
     merge3.rename(columns={'precip_x':'precip_1','precip_y':'precip_2','precip':'precip_3'},inplace=True)
-    #%%
+    
     merge4 = merge3.merge(df,left_on=['CMAID','time','imerg_lat2','imerg_lon2'],right_on=['CMAID','time','lat','lon'],how='left')
     merge4.drop(columns=['lat','lon'],inplace=True)
     merge4.rename(columns={'precip':'precip_4'},inplace=True)
@@ -313,7 +313,7 @@ for yy in np.arange(2000,2019):
         matched_daily_precip = merge4.copy()
     else:
         matched_daily_precip = pd.concat([matched_daily_precip,merge4],axis=0)
-#%%
+
 matched_daily_precip['imerg_precip'] = matched_daily_precip[['precip_1', 'precip_2', 'precip_3', 'precip_4']].mean(axis=1)
 #%% linear fit daily precip data and plot
 

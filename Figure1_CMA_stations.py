@@ -14,6 +14,7 @@ Created on Sun Jun 13 11:00:15 2021
 @author: lzhou
 """
 import os
+import pandas as pd
 #import pandas as pd
 #import xarray as xr
 #from datetime import timedelta
@@ -42,6 +43,8 @@ CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data'
 #C/home/lzhou/Precipitation/Data/CMA_Historical_Data
 Output_folder = '/home/lzhou/Precipitation/Output'
 Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+Figure_folder = os.path.join(Output_folder,'Figures')
+
 #case = 'IMERG_1000km_12'
 #%% Make coordinates for IMERG data
 # find the extent of data 
@@ -64,4 +67,8 @@ cn_shape.geometry.boundary.plot(ax=ax)
 tw_shape.geometry.boundary.plot(ax=ax)
 ax.set_xlabel('Longitude')
 ax.set_ylabel('Latitude')
-fig.savefig('Fig1.png',bbox_inches='tight')
+#fig.savefig('Fig1.png',bbox_inches='tight')
+
+fname = 'CMA_Stations_Map.png'
+outfile = os.path.join(Figure_folder,fname)
+fig.savefig(outfile,bbox_inches='tight')

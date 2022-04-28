@@ -37,7 +37,7 @@ import precipitation_utils
 
 item = 'precipitationCal'
 
-zone = 10
+zone = 15
 pre_days = 1        # number of days before the node's time to include precipitation   
 post_days = 2       # number of days after hte node's time to include precipitation
 
