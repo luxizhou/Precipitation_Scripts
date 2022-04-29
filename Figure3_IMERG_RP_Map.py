@@ -229,7 +229,7 @@ for ii in np.arange(0,len(ranks)):
     ax.set_ylim([15,55])    
     ax.set_xlabel('Longitude')
     ax.set_ylabel('Latitude')                              
-    figname = case +'_RP'+str(rps[ii]) + 'Y_Daily_Precip_until2019' + '.png'
+    figname = case +'_RP'+str(rps[ii]) + 'Y_Daily_Precip_until2020' + '.png'
     fig.tight_layout()
     fig.savefig(os.path.join(Figure_folder, figname))
     plt.close(fig)
