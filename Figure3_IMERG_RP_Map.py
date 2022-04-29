@@ -77,10 +77,10 @@ infile = os.path.join(Output_folder,case,filename)
 event_total = pd.read_pickle(infile)
 event_total = event_total[event_total.precip>=threshold].reset_index(drop=True)
 #event_total = event_total[event_total.CMAID>200100]
-event_total = event_total[(event_total.CMAID>200100)&(event_total.CMAID<202000)]
+event_total = event_total[(event_total.CMAID>200100)&(event_total.CMAID<202100)]
 #%%
 if 'IMERG' in case:
-    sorted_df = precipitation_utils.sort_precipitation_at_grid(event_total,'CMAID','precip',18)
+    sorted_df = precipitation_utils.sort_precipitation_at_grid(event_total,'CMAID','precip',0)
 #%%
 dummy_df = sorted_df.loc[:,~pd.isna(sorted_df).all(axis=0)]
 
@@ -102,7 +102,7 @@ sorted_df = gpd.GeoDataFrame(dummy_df, \
 idx = sorted_df.within(greater_china.iloc[0])
 china_points = sorted_df.loc[idx].copy()
 
-filename = case + '_sorted_total_precip_2001_2019.pkl'
+filename = case + '_sorted_total_precip_2001_2020.pkl'
 ofile = os.path.join(Output_folder,case,filename)
 china_points.to_pickle(ofile)
 
@@ -128,7 +128,7 @@ for ii in np.arange(0,len(ranks)):
     ax.set_ylim([15,55])    
     ax.set_xlabel('Longitude')
     ax.set_ylabel('Latitude')                              
-    figname = case +'_RP'+str(rps[ii]) + 'Y_Event_Total_Precip_until2019' + '.png'
+    figname = case +'_RP'+str(rps[ii]) + 'Y_Event_Total_Precip_until2020' + '.png'
     fig.tight_layout()
     fig.savefig(os.path.join(Figure_folder, figname))
     plt.close(fig)
@@ -164,7 +164,7 @@ imerg_daily_precip = sorted_df.loc[:,~pd.isna(sorted_df).all(axis=0)]
 print(yy,'year max:',imerg_daily_precip.max().max())
 #imerg_daily_precip = sorted_df.iloc[:,0:22]
 
-for yy in np.arange(2002,2020):
+for yy in np.arange(2002,2021):
     print(yy)
     filename = item+'_' + str(yy) +'.pkl' 
     infile = os.path.join(Output_folder,case,filename)
