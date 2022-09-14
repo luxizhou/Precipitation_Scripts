@@ -34,13 +34,19 @@ warnings.filterwarnings("ignore")
 import precipitation_utils 
 
 
-os.chdir('/home/lzhou/Precipitation/Precipitation_Scripts')
+#os.chdir('/home/lzhou/Precipitation/Precipitation_Scripts')
 
-IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
-CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data/Wind_Rainfall/'
-Output_folder = '/home/lzhou/Precipitation/Output'
-Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+#IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
+#CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data/Wind_Rainfall/'
+#Output_folder = '/home/lzhou/Precipitation/Output'
+#Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+
+IMERG_folder = r'D:\Precipitation\IMERG'
+CMA_folder = r'D:\Precipitation\CMA_Historical_Data'
+Output_folder = r'D:\Precipitation\Output'
+Output_folder2 = r'D:\Precipitation\Precipitation_Scripts\Output'
 Figure_folder = os.path.join(Output_folder,'Figures')
+
 
 case = 'IMERG_10degree_12'
 item = 'precipitationCal'

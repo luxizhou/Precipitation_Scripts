@@ -38,12 +38,20 @@ shapely.speedups.enabled
 proj_epsg = 2345    # projeced CRS 
 init_epsg = 4326    # geographical CRS
 #%%
-IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
-CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data'
-#C/home/lzhou/Precipitation/Data/CMA_Historical_Data
-Output_folder = '/home/lzhou/Precipitation/Output'
-Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+#IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
+#CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data'
+#Output_folder = '/home/lzhou/Precipitation/Output'
+#Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+
+IMERG_folder = r'D:\Precipitation\IMERG'
+CMA_folder = r'D:\Precipitation\CMA_Historical_Data'
+Output_folder = r'D:\Precipitation\Output'
+Output_folder2 = r'D:\Precipitation\Precipitation_Scripts\Output'
 Figure_folder = os.path.join(Output_folder,'Figures')
+
+
+
+
 
 #case = 'IMERG_1000km_12'
 #%% Make coordinates for IMERG data

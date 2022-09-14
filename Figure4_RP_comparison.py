@@ -36,13 +36,20 @@ from hazard import GPD
 from scipy.stats import genpareto, scoreatpercentile
 
 
-os.chdir('/home/lzhou/Precipitation/Precipitation_Scripts')
+#os.chdir('/home/lzhou/Precipitation/Precipitation_Scripts')
 
-IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
-CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data/Wind_Rainfall/'
-Output_folder = '/home/lzhou/Precipitation/Output'
-Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+#IMERG_folder = '/media/lzhou/Extreme SSD/Precipitation/IMERG'
+#CMA_folder = '/home/lzhou/Precipitation/Data/CMA_Historical_Data/Wind_Rainfall/'
+#Output_folder = '/home/lzhou/Precipitation/Output'
+#Output_folder2 = '/home/lzhou/Precipitation/Precipitation_Scripts/Output/'
+
+
+IMERG_folder = r'D:\Precipitation\IMERG'
+CMA_folder = r'D:\Precipitation\CMA_Historical_Data'
+Output_folder = r'D:\Precipitation\Output'
+Output_folder2 = r'D:\Precipitation\Precipitation_Scripts\Output'
 Figure_folder = os.path.join(Output_folder,'Figures')
+
 
 case = 'IMERG_10degree_12'
 item = 'precipitationCal'
@@ -67,7 +74,7 @@ imerg_daily_precip.drop(columns='geometry',inplace=True)
 
 
 #%% load station data
-stations = pd.read_csv(os.path.join(CMA_folder,'China_Sta.csv'))
+stations = pd.read_csv(os.path.join(CMA_folder,'Wind_Rainfall','China_Sta.csv'))
 stations['lat'] = stations['lat'].apply(lambda x: float(x[:2])+int(x[3:5])/60.)
 stations['long'] = stations['long'].apply(lambda x: float(x[:3])+int(x[4:6])/60.)
 stations.rename(columns={"long": "lon"},inplace=True)
@@ -99,7 +106,7 @@ for idx,row in stations.iterrows():
         stations.loc[idx,'imerg_lon2'] = imerg_lats[lon_i+1] 
         
 #%% load daily precip from CMA
-daily_precip = pd.read_csv(os.path.join(CMA_folder,'1949-2018_DailyPrecipitation.csv'),names=['CMAID','TyphoonID','StationID','date','daily_precip'])
+daily_precip = pd.read_csv(os.path.join(CMA_folder,'Wind_Rainfall','1949-2018_DailyPrecipitation.csv'),names=['CMAID','TyphoonID','StationID','date','daily_precip'])
 daily_precip = daily_precip[daily_precip.daily_precip>threshold]
 daily_precip = daily_precip[daily_precip.CMAID>200100]
 daily_precip['time'] = pd.to_datetime(daily_precip.date)
@@ -136,7 +143,8 @@ data = imerg_data.copy()
 years = imerg_years
 rate = len(data)/years
 shape,location,scale=genpareto.fit(data)
-Rpeval = GPD.gpdReturnLevel([10,20], , shape, scale, rate)
+mu=data.mean()
+Rpeval = GPD.gpdReturnLevel([10,20], mu, shape, scale, rate)
 
 
 
